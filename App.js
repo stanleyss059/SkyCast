@@ -13,6 +13,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import Settings from './Screens/SettingsScreen'; // ✅ Correct path
+import News from './Screens/NewsScreen'; // ✅ Correct pathr
+
 const Stack = createNativeStackNavigator();
 
 const Today = ({ navigation }) => {
@@ -27,11 +30,14 @@ const Today = ({ navigation }) => {
       <View style={styles.overlay} />
       <SafeAreaView style={styles.safeContainer}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity style={styles.headerButton} onPress={() => navigation.navigate('News')}>
             <MaterialCommunityIcons name="newspaper" size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.title}>SkyCast</Text>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => navigation.navigate('Settings')}
+          >
             <Ionicons name="settings" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -69,7 +75,10 @@ const Hourly = ({ navigation }) => {
             <MaterialCommunityIcons name="newspaper" size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.title}>SkyCast</Text>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => navigation.navigate('Settings')}
+          >
             <Ionicons name="settings" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -102,7 +111,10 @@ const Daily = ({ navigation }) => {
             <MaterialCommunityIcons name="newspaper" size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.title}>SkyCast</Text>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => navigation.navigate('Settings')}
+          >
             <Ionicons name="settings" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -130,8 +142,6 @@ const Maps = ({ navigation }) => {
     >
       <View style={styles.overlay} />
       <SafeAreaView style={styles.safeContainer}>
-        
-
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
             <View style={styles.content1}>
@@ -167,10 +177,6 @@ const Footer = ({ navigation }) => (
   </View>
 );
 
-const Settings = () => {
-  
-}
-
 export default function App() {
   return (
     <NavigationContainer>
@@ -179,6 +185,7 @@ export default function App() {
         <Stack.Screen component={Hourly} name="Hourly" />
         <Stack.Screen component={Daily} name="Daily" />
         <Stack.Screen component={Maps} name="Maps" />
+        <Stack.Screen component={Settings} name="Settings" />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -204,7 +211,7 @@ const styles = StyleSheet.create({
   header: {
     height: 60,
     borderBottomColor: 'white',
-    borderBottomWidth: 1, // ✔ Added border width here
+    borderBottomWidth: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
