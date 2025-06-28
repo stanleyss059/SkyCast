@@ -15,6 +15,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Settings from './Screens/SettingsScreen';
 import News from './Screens/NewsScreen';
+import OnBoardingScreen from './Screens/OnBoardingScreen';
+import HourScreen from './Screens/HourScreen.js'
 
 const Stack = createNativeStackNavigator();
 
@@ -240,8 +242,9 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        
         <Stack.Screen component={Today} name="Today" />
-        <Stack.Screen component={Hourly} name="Hourly" />
+        <Stack.Screen component={HourScreen} name="Hourly" />
         <Stack.Screen component={Daily} name="Daily" />
         <Stack.Screen component={Maps} name="Maps" />
         <Stack.Screen component={Settings} name="Settings" />

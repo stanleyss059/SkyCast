@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, StatusBar, ImageBackground, ScrollView } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, StatusBar, ImageBackground, ScrollView, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+
+import Footer from '../Components/footer.js'; // Capitalized import
 
 // Define days
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -65,7 +67,8 @@ const slide3 = orderedDays.map((day, index) => ({
   day,
 }));
 
-export default function NewsScreen() {
+// ✅ Updated component
+export default function HourScreen({ navigation }) {
   return (
     <>
       <ImageBackground
@@ -75,12 +78,25 @@ export default function NewsScreen() {
       >
         <View style={styles.overlay}>
           <StatusBar backgroundColor={colors.primary} barStyle="light-content" />
+
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.navigate('News')}>
+              <MaterialCommunityIcons name="newspaper" size={24} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.title}>SkyCast</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+              <Ionicons name="settings" size={24} color="white" />
+            </TouchableOpacity>
+          </View>  
+
+          {/* Scrollable Forecast */}
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             {slide3.map((dayItem, dayIndex) => {
               const isToday = dayIndex === 0;
               const filteredSlide = isToday
-                ? slide.slice(currentHourIndex) // show from current hour for today
-                : slide; // full slide for other days
+                ? slide.slice(currentHourIndex) // Start from current hour today
+                : slide; // Full day data for other days
 
               return (
                 <View key={dayItem.id} style={styles.dayBlock}>
@@ -114,6 +130,9 @@ export default function NewsScreen() {
               );
             })}
           </ScrollView>
+
+          {/* Footer */}
+          <Footer navigation={navigation} />      
         </View>
       </ImageBackground>
     </>
@@ -131,16 +150,27 @@ const styles = StyleSheet.create({
   scrollContainer: {
     padding: 15,
   },
+  header: {
+    height: 60,
+    borderBottomWidth: 1,
+    borderBottomColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  title: {
+    color: colors.white,
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
   dayBlock: {
     marginBottom: 25,
     backgroundColor: 'rgba(58, 53, 80, 0.8)',
     borderRadius: 12,
     padding: 15,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
