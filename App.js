@@ -1,8 +1,12 @@
 import React from 'react';
-import nav from './Screens/nav.js'; // Importing the nav function
+import { StatusBar } from 'react-native';
+import Nav from './Screens/nav.js'; // This handles all screen navigation
 
 export default function App() {
   return (
-    <nav />
+    <>
+      <StatusBar barStyle="light-content" />
+      <Nav />
+    </>
   );
 }

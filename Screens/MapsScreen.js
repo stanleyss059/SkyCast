@@ -1,79 +1,132 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
-  ImageBackground,
-  ScrollView,
-  StatusBar,
+  Dimensions,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
 } from 'react-native';
-import Footer from '../Components/footer'; // Adjust if needed
+import MapView, { Marker, PROVIDER_GOOGLE, UrlTile } from 'react-native-maps';
+import * as Location from 'expo-location';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Footer from '../Components/footer';
 
-const Maps = ({ navigation }) => (
-  <ImageBackground
-    source={require('../assets/background.jpg')}
-    style={styles.container}
-    resizeMode="cover"
-  >
-    <StatusBar barStyle="light-content" />
-    <View style={styles.overlay} />
-    <SafeAreaView style={styles.safeContainer}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <Text style={styles.contentText}>Weather Maps</Text>
-          {/* Insert your weather map component or image here */}
-        </View>
-      </ScrollView>
+const { width, height } = Dimensions.get('window');
+const FOOTER_HEIGHT = 90;
+const WEATHERBIT_KEY = '616ea8aa3059465184ec47c740648c1b';
+
+const LAYERS = {
+  Temperature: `https://maps.weatherbit.io/v2.0/singleband/temp2m/latest/{z}/{x}/{y}.png?key=${WEATHERBIT_KEY}`,
+  Precipitation: `https://maps.weatherbit.io/v2.0/singleband/catprecipdbz/latest/{z}/{x}/{y}.png?key=${WEATHERBIT_KEY}`,
+  Wind: `https://maps.weatherbit.io/v2.0/singleband/wind10m/latest/{z}/{x}/{y}.png?key=${WEATHERBIT_KEY}`,
+  Clouds: `https://maps.weatherbit.io/v2.0/singleband/fullsat/latest/{z}/{x}/{y}.png?key=${WEATHERBIT_KEY}`,
+};
+
+const WeatherHeatMap = ({ navigation }) => {
+  const [region, setRegion] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [layer, setLayer] = useState('Temperature');
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Location Permission Required', 'Enable location to view the heat map');
+        return;
+      }
+      const { coords } = await Location.getCurrentPositionAsync({});
+      setLocation(coords);
+      setRegion({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        latitudeDelta: 2,
+        longitudeDelta: 2,
+      });
+    })();
+  }, []);
+
+  if (!region) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#fff" />
+        <Text style={{ color: '#fff', marginTop: 10 }}>Loading Weather Heat Map...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      <MapView
+        provider={PROVIDER_GOOGLE}
+        style={[styles.map, { height: height - FOOTER_HEIGHT }]}
+        region={region}
+        showsUserLocation
+        showsMyLocationButton
+        loadingEnabled
+      >
+        <UrlTile
+          urlTemplate={LAYERS[layer]}
+          zIndex={1}
+          maximumZ={15}
+          tileSize={256}
+        />
+
+        <Marker
+          coordinate={{
+            latitude: location.latitude,
+            longitude: location.longitude,
+          }}
+          title="You are here"
+          pinColor="red"
+        />
+      </MapView>
+
+      <View style={styles.layerSelector}>
+        {Object.keys(LAYERS).map((key) => (
+          <TouchableOpacity key={key} onPress={() => setLayer(key)} style={styles.layerButton}>
+            <Text style={[styles.layerText, layer === key && styles.selectedLayer]}>{key}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <Footer navigation={navigation} />
-    </SafeAreaView>
-  </ImageBackground>
-);
-
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  overlay: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    zIndex: 1,
+  map: {
+    width,
   },
-  safeContainer: { flex: 1, zIndex: 2 },
-  header: {
-    height: 60,
-    borderBottomColor: 'white',
-    borderBottomWidth: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-  },
-  headerButton: { padding: 8 },
-  title: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  content: {
+  loader: {
     flex: 1,
+    backgroundColor: '#222',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+  layerSelector: {
+    position: 'absolute',
+    bottom: FOOTER_HEIGHT + 10,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 10,
+    flexDirection: 'row',
+    padding: 8,
   },
-  contentText: {
+  layerButton: {
+    marginHorizontal: 6,
+  },
+  layerText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  selectedLayer: {
+    textDecorationLine: 'underline',
+    color: '#FFD700',
   },
 });
 
-
-export default Maps;
+export default WeatherHeatMap;
