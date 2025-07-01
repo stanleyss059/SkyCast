@@ -4,26 +4,26 @@
     "slug": "SkyCast",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./SkyCast-logo.png",
+    "icon": "./assets/SkyCast-logo-round.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./SkyCast-logo.png",
+      "image": "./assets/SkyCast-logo-round.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "transparent"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./SkyCast-logo.png",
+        "foregroundImage": "./assets/SkyCast-logo-round.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./SkyCast-logo.png"
+      "favicon": "./assets/SkyCast-logo-round.png"
     }
   }
 }
