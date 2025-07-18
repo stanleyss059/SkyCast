@@ -11,7 +11,6 @@ import {
 import MapView, { Marker, PROVIDER_GOOGLE, UrlTile } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Footer from '../Components/footer';
 
 const { width, height } = Dimensions.get('window');
 const FOOTER_HEIGHT = 90;
@@ -90,8 +89,6 @@ const WeatherHeatMap = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </View>
-
-      <Footer navigation={navigation} />
     </View>
   );
 };

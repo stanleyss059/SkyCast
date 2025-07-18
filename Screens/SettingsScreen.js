@@ -12,7 +12,7 @@ export default function SettingsScreen() {
       subtitle: 'Temperature, wind speed, pressure',
       icon: 'thermometer',
       dropdownOptions: [
-        { label: 'Temperature: Celsius (°C)', value: 'celsius' },
+        { label: 'Temperature: Celsius (°C)', value: 'celsius'},
         { label: 'Temperature: Fahrenheit (°F)', value: 'fahrenheit' },
         { label: 'Wind Speed: km/h', value: 'kmh' },
         { label: 'Wind Speed: mph', value: 'mph' },
@@ -110,8 +110,8 @@ export default function SettingsScreen() {
     }));
   };
 
-  const handleDropdownItemPress = (parentId, option) => {
-    console.log(`Selected: ${option.label} from ${parentId}`);
+  const handleDropdownItemPress = (option, dropdownOption) => {
+    console.log(`Selected: ${dropdownOption.label} from ${option.title}`);
     // Add your action logic here
   };
 
@@ -166,7 +166,7 @@ export default function SettingsScreen() {
                         styles.dropdownItem,
                         dropdownIndex === option.dropdownOptions.length - 1 && styles.lastDropdownItem
                       ]}
-                      onPress={() => handleDropdownItemPress(option.id, dropdownOption)}
+                      onPress={() => handleDropdownItemPress(option, dropdownOption)}
                       activeOpacity={0.6}
                     >
                       <Text style={styles.dropdownItemText}>{dropdownOption.label}</Text>
