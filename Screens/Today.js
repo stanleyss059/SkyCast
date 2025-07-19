@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -33,11 +34,27 @@ const ConIcon = (condition) => {
 const now = new Date();
 const currday = now.getDay();
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const upcomingDays = [];
+
+// Slide data: current day to next 6 days
+const slide = [];
 for (let i = 0; i < 7; i++) {
-  const dayIndex = (currday + i) % 7;
-  upcomingDays.push(days[dayIndex]);
+  slide.push({
+    id: i + 1,
+    day: days[(currday + i) % 7],
+    icon: 'weather-night-partly-cloudy',
+    temperature: `${20 + i}°C`,
+  });
 }
+
+// ✅ Slide card component
+const Slide = ({ item }) => (
+  <TouchableOpacity style={styles.example}>
+    <Text style={styles.slideDay}>{item.day}</Text>
+    <MaterialCommunityIcons name={item.icon} size={60} color="#B0C4DE" />
+    <Text style={styles.slideTemp}>{item.temperature}</Text>
+  </TouchableOpacity>
+);
+
 
 const Today = ({ navigation }) => {
   const location = 'Kumasi';
@@ -65,56 +82,78 @@ const Today = ({ navigation }) => {
               <Text style={styles.temperatureText}>21°</Text>
             </View>
             <Text style={styles.conditionText}>{currentCondition}</Text>
-            <Text style={styles.feelsLikeText}>Feels like 22°</Text>
+            
           </View>
 
           <View style={styles.detailsGrid}>
-            <View style={styles.detailCard}>
+            <TouchableOpacity style={styles.detailCard}>
               <MaterialCommunityIcons name="thermometer-high" size={28} color="#FF6B6B" />
               <Text style={styles.detailLabel}>High</Text>
               <Text style={styles.detailValue}>21°C</Text>
-            </View>
-            <View style={styles.detailCard}>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.detailCard}>
               <MaterialCommunityIcons name="thermometer-low" size={28} color="#4ECDC4" />
               <Text style={styles.detailLabel}>Low</Text>
               <Text style={styles.detailValue}>21°C</Text>
-            </View>
-            <View style={styles.detailCard}>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.detailCard}>
               <MaterialCommunityIcons name="water-percent" size={28} color="#45B7D1" />
               <Text style={styles.detailLabel}>Humidity</Text>
               <Text style={styles.detailValue}>65%</Text>
-            </View>
-            <View style={styles.detailCard}>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.detailCard}>
               <Feather name="wind" size={28} color="#96CEB4" />
               <Text style={styles.detailLabel}>Wind</Text>
               <Text style={styles.detailValue}>10 km/h</Text>
-            </View>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.additionalInfoContainer}>
-            <View style={styles.infoCard}>
+            <TouchableOpacity style={styles.infoCard}>
               <View style={styles.infoHeader}>
                 <MaterialCommunityIcons name="thermometer" size={24} color="#FFD93D" />
                 <Text style={styles.infoLabel}>RealFeel</Text>
               </View>
               <Text style={styles.infoValue}>22°C</Text>
-            </View>
-            <View style={styles.infoCard}>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.infoCard}>
               <View style={styles.infoHeader}>
                 <MaterialCommunityIcons name="gauge" size={24} color="#A8E6CF" />
                 <Text style={styles.infoLabel}>Pressure</Text>
               </View>
               <Text style={styles.infoValue}>1020 hPa</Text>
-            </View>
-            <View style={styles.infoCard}>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.infoCard}>
               <View style={styles.infoHeader}>
                 <MaterialCommunityIcons name="white-balance-sunny" size={24} color="#FFB347" />
                 <Text style={styles.infoLabel}>UV Index</Text>
               </View>
               <Text style={styles.infoValue}>10</Text>
-              <Text style={styles.uvWarning}>Very High</Text>
-            </View>
+              
+            </TouchableOpacity>
+            
           </View>
+
+         <View>
+            <Text style={{
+              color: '#E8F4FD',
+              fontSize: 16,
+              fontWeight: '600',
+              marginTop: 10,
+              marginLeft: 15,
+            }}>
+              Daily Forcast
+            </Text>
+            <FlatList
+                        data={slide}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={({ item }) => <Slide item={item} />}
+                        contentContainerStyle={styles.flatListContainer}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        pagingEnabled
+            />
+         </View>
 
          
         </ScrollView>
@@ -268,6 +307,29 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 20,
     bottom: 8,
+  },
+  example: {
+    backgroundColor: 'rgba(232, 244, 253, 0.08)',
+    height: 180,
+    width: 120,
+    borderRadius: 20,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 16,
+    marginHorizontal: 8,
+    marginTop: 20,
+  },
+  slideDay: {
+    color: '#E8F4FD',
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: -10,
+  },
+  slideTemp:{
+    color: '#E8F4FD',
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 15,
   },
 });
 
