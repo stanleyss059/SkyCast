@@ -1,5 +1,4 @@
-import React from 'react';
-
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +8,8 @@ import {
   ImageBackground,
   FlatList,
   StatusBar,
+  TouchableOpacity,
+  Animated,
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -16,6 +17,7 @@ const { width, height } = Dimensions.get('window');
 const colors = {
   primary: '#282534',
   white: '#FFFFFF',
+  accent: '#FFD700',
 };
 
 const slides = [
@@ -75,10 +77,35 @@ const Slide = ({ item }) => {
 };
 
 const OnBoardingScreen = ({ navigation }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef();
+  const scrollX = useRef(new Animated.Value(0)).current;
+
+  const handleNext = () => {
+    if (currentIndex < slides.length - 1) {
+      flatListRef.current.scrollToIndex({ index: currentIndex + 1 });
+    } else {
+      navigation.replace('Today');
+    }
+  };
+
+  const handleSkip = () => {
+    navigation.replace('Today');
+  };
+
+  const onViewableItemsChanged = useRef(({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0].index);
+    }
+  }).current;
+
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.primary} barStyle="light-content" />
       <FlatList
+        ref={flatListRef}
         data={slides}
         contentContainerStyle={styles.flatListContainer}
         horizontal
@@ -86,7 +113,33 @@ const OnBoardingScreen = ({ navigation }) => {
         pagingEnabled
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <Slide item={item} />}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: false }
+        )}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewConfigRef.current}
       />
+      {/* Pagination Dots */}
+      <View style={styles.paginationContainer}>
+        {slides.map((_, i) => (
+          <View
+            key={i}
+            style={[styles.dot, currentIndex === i && styles.activeDot]}
+          />
+        ))}
+      </View>
+      {/* Controls */}
+      <View style={styles.controlsContainer}>
+        {currentIndex < slides.length - 1 ? (
+          <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+        ) : <View style={{ width: 60 }} />}
+        <TouchableOpacity onPress={handleNext} style={styles.nextButton}>
+          <Text style={styles.nextText}>{currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -143,6 +196,60 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.6)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+  },
+  paginationContainer: {
+    position: 'absolute',
+    bottom: 120,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    marginHorizontal: 6,
+  },
+  activeDot: {
+    backgroundColor: 'white',
+    width: 18,
+  },
+  controlsContainer: {
+    position: 'absolute',
+    bottom: 50,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  skipButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    backgroundColor: 'transparent',
+  },
+  skipText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  nextButton: {
+    backgroundColor: 'transparent',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    // No shadow or elevation for transparent button
+  },
+  nextText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 });
 

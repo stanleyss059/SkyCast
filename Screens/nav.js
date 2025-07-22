@@ -17,7 +17,7 @@ const Nav = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         
-        
+      <Stack.Screen name="onBoarding" component={OnBoardingScreen} />
         <Stack.Screen name="Today" component={Today} />
         <Stack.Screen name="Hourly" component={HourScreen} />
         <Stack.Screen name="Daily" component={Daily} />

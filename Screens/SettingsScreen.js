@@ -138,10 +138,10 @@ export default function SettingsScreen() {
               >
                 <View style={styles.settingLeft}>
                   <View style={styles.iconContainer}>
-                    <MaterialCommunityIcons 
-                      name={option.icon} 
-                      size={24} 
-                      color="white" 
+                    <MaterialCommunityIcons
+                      name={option.icon}
+                      size={24}
+                      color="white"
                     />
                   </View>
                   <View style={styles.textContainer}>
@@ -149,13 +149,13 @@ export default function SettingsScreen() {
                     <Text style={styles.settingSubtitle}>{option.subtitle}</Text>
                   </View>
                 </View>
-                <MaterialCommunityIcons 
-                  name={expandedItems[option.id] ? "chevron-up" : "chevron-down"} 
-                  size={24} 
-                  color="rgba(255, 255, 255, 0.6)" 
+                <MaterialCommunityIcons
+                  name={expandedItems[option.id] ? "chevron-up" : "chevron-down"}
+                  size={24}
+                  color="rgba(255, 255, 255, 0.6)"
                 />
               </TouchableOpacity>
-              
+
               {/* Dropdown Menu */}
               {expandedItems[option.id] && (
                 <View style={styles.dropdownContainer}>
@@ -170,10 +170,10 @@ export default function SettingsScreen() {
                       activeOpacity={0.6}
                     >
                       <Text style={styles.dropdownItemText}>{dropdownOption.label}</Text>
-                      <MaterialCommunityIcons 
-                        name="chevron-right" 
-                        size={18} 
-                        color="rgba(255, 255, 255, 0.4)" 
+                      <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={18}
+                        color="rgba(255, 255, 255, 0.4)"
                       />
                     </TouchableOpacity>
                   ))}
@@ -197,25 +197,26 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(87, 97, 126, 0.9)',
+    backgroundColor: '#1E2749',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    borderBottomColor: 'rgba(232, 244, 253, 0.15)',
+    backgroundColor: 'rgba(30, 39, 73, 0.9)',
   },
   headerTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#E8F4FD',
     textAlign: 'center',
     marginBottom: 5,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(232, 244, 253, 0.8)',
     textAlign: 'center',
     fontWeight: '400',
   },
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
   settingsGroup: {
     marginTop: 20,
     marginHorizontal: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(232, 244, 253, 0.08)',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(232, 244, 253, 0.12)',
     minHeight: 70,
   },
   lastItem: {
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(232, 244, 253, 0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -262,12 +263,12 @@ const styles = StyleSheet.create({
   settingTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: 'white',
+    color: '#E8F4FD',
     marginBottom: 2,
   },
   settingSubtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(232, 244, 253, 0.8)',
     fontWeight: '400',
   },
   appInfoSection: {
@@ -279,23 +280,23 @@ const styles = StyleSheet.create({
   appInfoTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#E8F4FD',
     marginBottom: 5,
   },
   appInfoVersion: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(232, 244, 253, 0.8)',
     marginBottom: 3,
   },
   appInfoCopyright: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: 'rgba(232, 244, 253, 0.5)',
     fontStyle: 'italic',
   },
   dropdownContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(232, 244, 253, 0.05)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(232, 244, 253, 0.12)',
   },
   dropdownItem: {
     flexDirection: 'row',
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingLeft: 75, // Indent to align with main content
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: 'rgba(232, 244, 253, 0.05)',
     minHeight: 45,
   },
   lastDropdownItem: {
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(232, 244, 253, 0.8)',
     fontWeight: '400',
     flex: 1,
   },

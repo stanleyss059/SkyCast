@@ -1,42 +1,44 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function Footer({ navigation }) {
   return (
-    <View style={styles.footer}>
-      <TouchableOpacity
-        style={styles.footerButton}
-        onPress={() => navigation.navigate('Today')}
-      >
-        <MaterialCommunityIcons name="calendar-today" size={25} color="white" />
-        <Text style={styles.footerText}>Today</Text>
-      </TouchableOpacity>
+    <SafeAreaView style={{ backgroundColor: 'transparent' }} edges={['bottom']}>
+      <View style={[styles.footer, Platform.OS === 'android' ? { paddingBottom: 16 } : null]}>
+        <TouchableOpacity
+          style={styles.footerButton}
+          onPress={() => navigation.navigate('Today')}
+        >
+          <MaterialCommunityIcons name="calendar-today" size={25} color="white" />
+          <Text style={styles.footerText}>Today</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.footerButton}
-        onPress={() => navigation.navigate('Hourly')}
-      >
-        <MaterialCommunityIcons name="clock-outline" size={25} color="white" />
-        <Text style={styles.footerText}>Hourly</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.footerButton}
+          onPress={() => navigation.navigate('Hourly')}
+        >
+          <MaterialCommunityIcons name="clock-outline" size={25} color="white" />
+          <Text style={styles.footerText}>Hourly</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.footerButton}
-        onPress={() => navigation.navigate('Daily')}
-      >
-        <MaterialCommunityIcons name="calendar-outline" size={25} color="white" />
-        <Text style={styles.footerText}>Daily</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.footerButton}
+          onPress={() => navigation.navigate('Daily')}
+        >
+          <MaterialCommunityIcons name="calendar-outline" size={25} color="white" />
+          <Text style={styles.footerText}>Daily</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.footerButton}
-        onPress={() => navigation.navigate('Maps')}
-      >
-        <MaterialCommunityIcons name="map" size={25} color="white" />
-        <Text style={styles.footerText}>Maps</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={styles.footerButton}
+          onPress={() => navigation.navigate('Maps')}
+        >
+          <MaterialCommunityIcons name="map" size={25} color="white" />
+          <Text style={styles.footerText}>Maps</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 

@@ -7,13 +7,13 @@ const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 
 // Color theme
 const colors = {
-  primary: '#282534',
-  secondary: '#3A3550',
-  accent: '#4A90E2',
-  white: '#FFFFFF',
-  lightGray: '#E0E0E0',
-  cardBackground: 'rgba(74, 144, 226, 0.15)',
-  overlay: 'rgba(40, 37, 52, 0.7)',
+  primary: '#1E2749',
+  secondary: 'rgba(30, 39, 73, 0.9)',
+  accent: '#B0C4DE',
+  white: '#E8F4FD',
+  lightGray: '#B0C4DE',
+  cardBackground: 'rgba(232, 244, 253, 0.08)',
+  overlay: 'rgba(0, 0, 0, 0.4)',
 };
 
 // Get ordered days starting from today
@@ -43,7 +43,7 @@ const generateHourlyData = () => {
     { high: '80°C', low: '75°C' },
     { high: '83°C', low: '77°C' },
   ];
-  
+
   return Hours.map((hour, index) => ({
     id: (index + 1).toString(),
     hour: hour,
@@ -88,10 +88,10 @@ export default function NewsScreen() {
                   {filteredSlide.map((hourItem) => (
                     <View key={hourItem.id} style={styles.card}>
                       <Text style={styles.textWhite}>{hourItem.hour}</Text>
-                      <MaterialCommunityIcons 
-                        name={hourItem.weather_icon} 
-                        size={24} 
-                        color={colors.accent} 
+                      <MaterialCommunityIcons
+                        name={hourItem.weather_icon}
+                        size={24}
+                        color={colors.accent}
                       />
                       <Text style={styles.textWhite}>{hourItem.High_temperature}</Text>
 
@@ -101,10 +101,10 @@ export default function NewsScreen() {
                       </View>
 
                       <View style={styles.row}>
-                        <MaterialCommunityIcons 
-                          name={hourItem.raindrop_icon} 
-                          size={20} 
-                          color={colors.accent} 
+                        <MaterialCommunityIcons
+                          name={hourItem.raindrop_icon}
+                          size={20}
+                          color={colors.accent}
                         />
                         <Text style={styles.textWhite}>{hourItem.rain_percent}</Text>
                       </View>
@@ -123,6 +123,7 @@ export default function NewsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.primary,
   },
   overlay: {
     flex: 1,
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
   },
   dayBlock: {
     marginBottom: 25,
-    backgroundColor: 'rgba(58, 53, 80, 0.8)',
+    backgroundColor: colors.cardBackground,
     borderRadius: 12,
     padding: 15,
     shadowColor: '#000',
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: 'rgba(74, 144, 226, 0.3)',
+    borderColor: 'rgba(232, 244, 253, 0.12)',
   },
   textWhite: {
     color: colors.white,
