@@ -1,0 +1,43 @@
+package weatherapp.weatherapp.repository;
+import weatherapp.weatherapp.entity.Location;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface LocationRepository extends JpaRepository<Location, Long> {
+    
+    // Find location by city name (case-insensitive)
+    Optional<Location> findByCityIgnoreCase(String city);
+    
+    // Find locations by country
+    List<Location> findByCountryIgnoreCase(String country);
+    
+    // Find location by city and country
+    Optional<Location> findByCityIgnoreCaseAndCountryIgnoreCase(String city, String country);
+    
+    // Find locations within a radius using native SQL
+    @Query(value = """
+        SELECT * FROM locations l
+        WHERE earth_distance(
+            ll_to_earth(l.latitude, l.longitude),
+            ll_to_earth(:lat, :lng)
+        ) <= :radiusMeters
+        ORDER BY earth_distance(
+            ll_to_earth(l.latitude, l.longitude),
+            ll_to_earth(:lat, :lng)
+        )
+        """, nativeQuery = true)
+    List<Location> findLocationsWithinRadius(@Param("lat") BigDecimal latitude,
+                                           @Param("lng") BigDecimal longitude,
+                                           @Param("radiusMeters") double radiusMeters);
+    
+    // Custom JPQL query to find locations with recent weather data
+    @Query("SELECT l FROM Location l WHERE EXISTS " +
+           "(SELECT wd FROM WeatherData wd WHERE wd.location = l AND wd.recordedAt >= CURRENT_DATE)")
+    List<Location> findLocationsWithRecentWeatherData();
+}

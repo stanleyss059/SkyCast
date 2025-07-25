@@ -1,0 +1,67 @@
+package weatherapp.weatherapp.repository;
+import weatherapp.weatherapp.entity.Location;
+import weatherapp.weatherapp.entity.WeatherData;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> {
+    
+    // Find weather data by location
+    List<WeatherData> findByLocationOrderByRecordedAtDesc(Location location);
+    
+    // Find latest weather data for a location
+    Optional<WeatherData> findFirstByLocationOrderByRecordedAtDesc(Location location);
+    
+    // Find weather data by location ID
+    List<WeatherData> findByLocationIdOrderByRecordedAtDesc(Long locationId);
+    
+    // Find weather data within a date range
+    List<WeatherData> findByLocationAndRecordedAtBetween(Location location, 
+                                                        LocalDateTime startDate, 
+                                                        LocalDateTime endDate);
+    
+    // Find weather data by condition
+    List<WeatherData> findByWeatherConditionIgnoreCase(String weatherCondition);
+    
+    // Find weather data with temperature range
+    @Query("SELECT wd FROM WeatherData wd WHERE wd.temperature BETWEEN :minTemp AND :maxTemp")
+    List<WeatherData> findByTemperatureRange(@Param("minTemp") BigDecimal minTemp, 
+                                           @Param("maxTemp") BigDecimal maxTemp);
+    
+    // Get average temperature for a location in the last N days
+    @Query("SELECT AVG(wd.temperature) FROM WeatherData wd " +
+           "WHERE wd.location = :location AND wd.recordedAt >= :fromDate")
+    BigDecimal getAverageTemperature(@Param("location") Location location, 
+                                   @Param("fromDate") LocalDateTime fromDate);
+    
+    // Custom native SQL query for complex weather analysis
+    @Query(value = """
+        SELECT wd.* FROM weather_data wd
+        JOIN locations l ON wd.location_id = l.id
+        WHERE l.city = :cityName
+        AND wd.recorded_at >= :fromDate
+        AND wd.temperature > :minTemp
+        ORDER BY wd.recorded_at DESC
+        """, nativeQuery = true)
+    List<WeatherData> findWeatherDataByCityAndCriteria(@Param("cityName") String cityName,
+                                                      @Param("fromDate") LocalDateTime fromDate,
+                                                      @Param("minTemp") BigDecimal minTemp);
+    
+    // Paginated weather data
+    Page<WeatherData> findByLocationOrderByRecordedAtDesc(Location location, Pageable pageable);
+    
+    // Delete old weather data (cleanup)
+    void deleteByRecordedAtBefore(LocalDateTime date);
+    
+    // Count weather data by location
+    long countByLocation(Location location);
+}

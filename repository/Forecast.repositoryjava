@@ -1,0 +1,52 @@
+package weatherapp.weatherapp.repository;
+import weatherapp.weatherapp.entity.Forecast;
+import weatherapp.weatherapp.entity.Location;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import java.time.LocalDate;
+import java.util.List;
+
+@Repository
+public interface ForecastRepository extends JpaRepository<Forecast, Long> {
+    
+    // Find forecasts by location
+    List<Forecast> findByLocationOrderByForecastDate(Location location);
+    
+    // Find forecasts by location ID
+    List<Forecast> findByLocationIdOrderByForecastDate(Long locationId);
+    
+    // Find future forecasts for a location
+    List<Forecast> findByLocationAndForecastDateGreaterThanEqualOrderByForecastDate(
+        Location location, LocalDate date);
+    
+    // Find forecasts for specific date range
+    List<Forecast> findByLocationAndForecastDateBetweenOrderByForecastDate(
+        Location location, LocalDate startDate, LocalDate endDate);
+    
+    // Find forecasts for next N days
+    @Query("SELECT f FROM Forecast f WHERE f.location = :location " +
+           "AND f.forecastDate BETWEEN CURRENT_DATE AND :endDate " +
+           "ORDER BY f.forecastDate")
+    List<Forecast> findForecastsForNextDays(@Param("location") Location location,
+                                          @Param("endDate") LocalDate endDate);
+    
+    // Get weekly forecast (7 days)
+    @Query("SELECT f FROM Forecast f WHERE f.location.id = :locationId " +
+           "AND f.forecastDate >= CURRENT_DATE " +
+           "ORDER BY f.forecastDate LIMIT 7")
+    List<Forecast> getWeeklyForecast(@Param("locationId") Long locationId);
+    
+    // Find forecasts by weather condition
+    List<Forecast> findByWeatherConditionIgnoreCaseOrderByForecastDate(String weatherCondition);
+    
+    // Custom query to find locations with rain forecast
+    @Query("SELECT DISTINCT f.location FROM Forecast f " +
+           "WHERE LOWER(f.weatherCondition) LIKE %:condition% " +
+           "AND f.forecastDate >= CURRENT_DATE")
+    List<Location> findLocationsByWeatherCondition(@Param("condition") String condition);
+    
+    // Delete old forecasts
+    void deleteByForecastDateBefore(LocalDate date);
+}
