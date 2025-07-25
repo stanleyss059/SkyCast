@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,124 +7,205 @@ import {
   StatusBar,
   TouchableOpacity,
   FlatList,
+  ScrollView,
+  TextInput,
+  Platform,
+  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Footer from '../Components/footer.js';
+import * as Location from 'expo-location';
+import { LocationContext } from '../context/LocationContext';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Notifications from 'expo-notifications';
+import RainEffect from '../Components/RainEffect';
+import { useTheme } from '../theme';
+import { WeatherDataContext } from '../WeatherDataContext';
 
-const placeholderHourly = [
-  { id: '1', time: '10:00', temp: 23, icon: 'weather-lightning', selected: false },
-  { id: '2', time: '11:00', temp: 21, icon: 'weather-lightning', selected: true },
-  { id: '3', time: '12:00', temp: 22, icon: 'weather-partly-cloudy', selected: false },
-  { id: '4', time: '01:00', temp: 19, icon: 'weather-night', selected: false },
-];
+const { width, height } = Dimensions.get('window');
 
-const theme = {
-  background: '#181C23',
-  text: '#fff',
-  accent: '#FFD600',
-  card: '#232733',
-  border: '#232733',
-  secondaryText: '#B0B0B0',
-};
+const WEATHERBIT_API_KEY = 'd49b871a655b4cdc80ab23d6985a07bb';
 
 export default function Today({ navigation }) {
-  const [hourly] = useState(placeholderHourly);
-  const cityName = 'Minsk';
+  const {
+    weather,
+    dailyForecast,
+    hourlyForecast,
+    loading,
+    error,
+    cityName,
+    setCityName,
+    changeCity,
+  } = React.useContext(WeatherDataContext);
+  const [searchMode, setSearchMode] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const { theme } = useTheme();
+
+  // Remove all useEffect and fetchWeatherData logic
+
+  // Search submit handler
+  const handleSearchSubmit = async () => {
+    if (searchText.trim()) {
+      await changeCity(searchText.trim());
+      setSearchMode(false);
+      setSearchText('');
+    }
+  };
+
+  if (loading) {
+    return (
+      <LinearGradient
+        colors={theme.gradient}
+        style={{ flex: 1 }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      >
+        <StatusBar barStyle={theme.text === '#fff' ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
+        <View style={styles.loadingContainerBox}>
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="large" color={theme.accent} />
+            <Text style={{ color: theme.text, marginTop: 10, fontSize: 18 }}>Loading weather...</Text>
+          </View>
+        </View>
+      </LinearGradient>
+    );
+  }
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor={theme.background} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: 'red', fontSize: 18 }}>{error}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={theme.background} />
-      {/* Header (from HourScreen.js) */}
-      <View style={styles.header}>
-        {/* Search button (left) */}
-        <TouchableOpacity style={styles.headerBtn}>
-          <MaterialCommunityIcons name="magnify" size={24} color={theme.accent} />
-        </TouchableOpacity>
-        {/* Location (center) */}
-        <View style={styles.headerLocation}>
-          <Ionicons name="location-outline" size={20} color={theme.accent} />
-          <Text style={styles.headerLocationText}>{cityName}</Text>
-        </View>
-        {/* Settings button (right) */}
-        <TouchableOpacity style={styles.headerBtn} onPress={() => navigation && navigation.navigate && navigation.navigate('Settings')}>
-          <Ionicons name="settings" size={24} color={theme.text} />
-        </TouchableOpacity>
-      </View>
-      {/* Updating Status */}
-      <View style={styles.updatingRow}>
-        <View style={styles.updatingDot} />
-        <Text style={styles.updatingText}>Updating</Text>
-      </View>
-      {/* Main Weather Icon & Temp */}
-      <View style={styles.mainWeather}>
-        <MaterialCommunityIcons name="weather-lightning" size={110} color={theme.accent} style={{ marginBottom: 10 }} />
-        <Text style={styles.tempText}>23°</Text>
-        <Text style={styles.weatherDesc}>Thunderclouds</Text>
-      </View>
-      {/* Weather Details Row */}
-      <View style={styles.detailsRow}>
-        <View style={styles.detailItem}>
-          <Feather name="wind" size={22} color={theme.text} />
-          <Text style={styles.detailValue}>13 km/h</Text>
-          <Text style={styles.detailLabel}>Wind</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Feather name="droplet" size={22} color={theme.text} />
-          <Text style={styles.detailValue}>24%</Text>
-          <Text style={styles.detailLabel}>Humidity</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <MaterialCommunityIcons name="weather-pouring" size={22} color={theme.text} />
-          <Text style={styles.detailValue}>87%</Text>
-          <Text style={styles.detailLabel}>Rain</Text>
-        </View>
-      </View>
-      {/* Hourly Forecast */}
-      <View style={styles.hourlySection}>
-        <View style={styles.hourlyHeader}>
-          <Text style={styles.hourlyTitle}>Today</Text>
-          <Text style={styles.sevenDays}>7 days</Text>
-        </View>
-        <FlatList
-          data={hourly}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={item => item.id}
-          contentContainerStyle={{ paddingHorizontal: 8 }}
-          renderItem={({ item }) => (
-            <View style={[styles.hourCard, item.selected && styles.hourCardSelected]}>
-              <MaterialCommunityIcons
-                name={item.icon}
-                size={32}
-                color={item.selected ? theme.accent : theme.text}
-                style={{ marginBottom: 4 }}
-              />
-              <Text style={[styles.hourTemp, item.selected && { color: theme.accent }]}>{item.temp}°</Text>
-              <Text style={[styles.hourTime, item.selected && { color: theme.accent }]}>{item.time}</Text>
+    <LinearGradient
+      colors={theme.gradient}
+      style={{ flex: 1 }}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+    >
+      {/* Rain effect if raining */}
+      {weather && (
+        (weather.weather.description && weather.weather.description.toLowerCase().includes('rain')) ||
+        (weather.weather.icon && weather.weather.icon.startsWith('r'))
+      ) && <RainEffect />}
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
+        <StatusBar barStyle={theme.text === '#fff' ? 'light-content' : 'dark-content'} backgroundColor={theme.background} />
+        {/* Header */}
+        <SafeAreaView style={styles.headerSafe} edges={['top']}>
+          <View style={styles.headerContent}>
+            <TouchableOpacity style={styles.headerBtn} onPress={() => setSearchMode(true)}>
+              <MaterialCommunityIcons name="magnify" size={24} color={theme.icon} />
+            </TouchableOpacity>
+            <View style={styles.headerLocation}>
+              <Ionicons name="location-outline" size={20} color={theme.icon} />
+              {searchMode ? (
+                <>
+                  <TextInput
+                    style={styles.headerLocationInput}
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    placeholder="Enter location"
+                    placeholderTextColor="#B0B0B0"
+                    onSubmitEditing={handleSearchSubmit}
+                    autoFocus
+                    returnKeyType="search"
+                  />
+                  <TouchableOpacity onPress={() => { setSearchMode(false); setSearchText(''); }}>
+                    <Ionicons name="close" size={20} color={theme.icon} style={{ marginLeft: 8 }} />
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <Text style={[styles.headerLocationText, { color: '#fff' }]}>{cityName}</Text>
+              )}
             </View>
-          )}
-        />
-      </View>
-      {/* Footer (from HourScreen.js) */}
-      <Footer navigation={navigation} />
-    </SafeAreaView>
+            <TouchableOpacity style={styles.headerBtn} onPress={() => navigation && navigation.navigate && navigation.navigate('Settings')}>
+              <Ionicons name="settings" size={24} color={theme.icon} />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+        {/* Main Weather Icon & Temp */}
+        <View style={styles.mainWeather}>
+          <MaterialCommunityIcons name={getWeatherIcon(weather.weather.icon)} size={110} color={theme.icon} style={{ marginBottom: 10 }} />
+          <Text style={[styles.tempText, { color: theme.temp }]}>{Math.round(weather.temp)}°</Text>
+          <Text style={[styles.weatherDesc, { color: theme.text }]}>{weather.weather.description}</Text>
+        </View>
+        {/* Weather Details Row */}
+        <View style={styles.detailsRow}>
+          <View style={styles.detailItem}>
+            <Feather name="wind" size={22} color={theme.icon} />
+            <Text style={[styles.detailValue, { color: theme.text }]}>{Math.round(weather.wind_spd)} km/h</Text>
+            <Text style={styles.detailLabel}>Wind</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Feather name="droplet" size={22} color={theme.icon} />
+            <Text style={[styles.detailValue, { color: theme.text }]}>{Math.round(weather.rh)}%</Text>
+            <Text style={styles.detailLabel}>Humidity</Text>
+          </View>
+          <View style={styles.detailItem}>
+            <MaterialCommunityIcons name="weather-pouring" size={22} color={theme.icon} />
+            <Text style={[styles.detailValue, { color: theme.text }]}>{Math.round(weather.precip)}%</Text>
+            <Text style={styles.detailLabel}>Rain</Text>
+          </View>
+        </View>
+        {/* 10-Day Daily Forecast */}
+        <View style={styles.hourlySection}>
+          <View style={styles.hourlyHeader}>
+            <Text style={[styles.hourlyTitle, { color: theme.temp }]}>10 days Daily Forecast</Text>
+          </View>
+          <FlatList
+            data={dailyForecast}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item, i) => `${item.valid_date}-${i}`}
+            contentContainerStyle={{ paddingHorizontal: 8, paddingVertical: 8 }}
+            renderItem={({ item, index }) => (
+              <View style={[styles.hourCard, index === 0 && styles.hourCardSelected]}>
+                <MaterialCommunityIcons
+                  name={getWeatherIcon(item.weather.icon)}
+                  size={32}
+                  color={index === 0 ? theme.icon : theme.text}
+                  style={{ marginBottom: 4 }}
+                />
+                <Text style={[styles.hourTemp, index === 0 && { color: theme.icon }]}>{Math.round(item.temp)}°</Text>
+                <Text style={[styles.hourTime, index === 0 && { color: theme.icon }]}>{new Date(item.valid_date).toLocaleDateString(undefined, { weekday: 'short' })}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                  <Feather name="droplet" size={16} color={index === 0 ? theme.icon : theme.text} style={{ marginRight: 2 }} />
+                  <Text style={{ color: index === 0 ? theme.icon : theme.text, fontWeight: 'bold', fontSize: 13 }}>{Math.round(item.pop)}%</Text>
+                </View>
+              </View>
+            )}
+          />
+        </View>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+          {/* ...main content... */}
+        </ScrollView>
+        <Footer navigation={navigation} />
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#181C23',
+    backgroundColor: 'transparent',
   },
   header: {
-    height: 60,
+    height: Platform.OS === 'ios' ? 90 : 70 + (StatusBar.currentHeight || 0),
     borderBottomColor: '#232733',
     borderBottomWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: width * 0.05,
     backgroundColor: '#232733',
+    paddingTop: Platform.OS === 'ios' ? 44 : (StatusBar.currentHeight || 24),
   },
   headerBtn: {
     padding: 8,
@@ -142,6 +223,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginLeft: 6,
+  },
+  headerLocationInput: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFD600',
+    minWidth: 120,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
   updatingRow: {
     flexDirection: 'row',
@@ -186,7 +278,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#232733',
+    backgroundColor: 'transparent',
     borderRadius: 18,
     marginHorizontal: 18,
     paddingVertical: 18,
@@ -228,7 +320,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   hourCard: {
-    backgroundColor: '#232733',
+    backgroundColor: 'transparent',
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
@@ -239,8 +331,7 @@ const styles = StyleSheet.create({
   },
   hourCardSelected: {
     backgroundColor: '#FFD60022',
-    borderWidth: 2,
-    borderColor: '#FFD600',
+    // No border
   },
   hourTemp: {
     color: '#fff',
@@ -253,4 +344,57 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 2,
   },
+  headerSafe: {
+    backgroundColor: 'transparent',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: width * 0.05,
+    height: Platform.OS === 'ios' ? 56 : 56,
+    minHeight: 56,
+  },
+  loadingContainerBox: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingBox: {
+    width: width * 0.8,
+    height: 180,
+    backgroundColor: 'rgba(30, 39, 73, 0.95)',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
 });
+
+function getWeatherIcon(iconCode) {
+  // Weatherbit icon codes: https://www.weatherbit.io/api/codes
+  // Map a few common ones, fallback to 'weather-partly-cloudy'
+  const map = {
+    'c01d': 'weather-sunny',
+    'c01n': 'weather-night',
+    'c02d': 'weather-partly-cloudy',
+    'c02n': 'weather-night-partly-cloudy',
+    'c03d': 'weather-cloudy',
+    'c03n': 'weather-cloudy',
+    'c04d': 'weather-cloudy',
+    'c04n': 'weather-cloudy',
+    'r01d': 'weather-pouring',
+    'r01n': 'weather-pouring',
+    'r02d': 'weather-pouring',
+    'r02n': 'weather-pouring',
+    't01d': 'weather-lightning',
+    't01n': 'weather-lightning',
+    's01d': 'weather-snowy',
+    's01n': 'weather-snowy',
+  };
+  return map[iconCode] || 'weather-partly-cloudy';
+}

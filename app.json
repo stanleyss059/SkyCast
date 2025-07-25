@@ -1,6 +1,5 @@
 {
   "expo": {
-    "name": "SkyCast",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/SkyCast-logo.png",
@@ -12,17 +11,30 @@
       "backgroundColor": "#E5E5E5"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stanleysam059.skycast",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/SkyCast-logo.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.stanleysam059.skycast"
     },
     "web": {
       "favicon": "./assets/SkyCast-logo.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a87e2a15-ff23-46b6-9971-61a9b058cf13"
+      }
+    },
+    "plugins": [
+      "expo-notifications"
+    ]
   }
 }

@@ -76,7 +76,7 @@ export default function NewsScreen() {
         <View style={styles.overlay}>
           <StatusBar backgroundColor={colors.primary} barStyle="light-content" />
           <ScrollView contentContainerStyle={styles.scrollContainer}>
-            {slide3.map((dayItem, dayIndex) => {
+            {(Array.isArray(slide3) ? slide3 : []).map((dayItem, dayIndex) => {
               const isToday = dayIndex === 0;
               const filteredSlide = isToday
                 ? slide.slice(currentHourIndex) // show from current hour for today
@@ -85,7 +85,7 @@ export default function NewsScreen() {
               return (
                 <View key={dayItem.id} style={styles.dayBlock}>
                   <Text style={styles.dayTitle}>{dayItem.day}</Text>
-                  {filteredSlide.map((hourItem) => (
+                  {(Array.isArray(filteredSlide) ? filteredSlide : []).map((hourItem) => (
                     <View key={hourItem.id} style={styles.card}>
                       <Text style={styles.textWhite}>{hourItem.hour}</Text>
                       <MaterialCommunityIcons

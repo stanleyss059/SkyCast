@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -81,15 +82,17 @@ const OnBoardingScreen = ({ navigation }) => {
   const flatListRef = useRef();
   const scrollX = useRef(new Animated.Value(0)).current;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentIndex < slides.length - 1) {
       flatListRef.current.scrollToIndex({ index: currentIndex + 1 });
     } else {
+      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
       navigation.replace('Today');
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    await AsyncStorage.setItem('hasSeenOnboarding', 'true');
     navigation.replace('Today');
   };
 
@@ -122,7 +125,7 @@ const OnBoardingScreen = ({ navigation }) => {
       />
       {/* Pagination Dots */}
       <View style={styles.paginationContainer}>
-        {slides.map((_, i) => (
+        {(Array.isArray(slides) ? slides : []).map((_, i) => (
           <View
             key={i}
             style={[styles.dot, currentIndex === i && styles.activeDot]}

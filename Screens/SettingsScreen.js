@@ -1,193 +1,60 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Switch } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '../theme';
 
 export default function SettingsScreen() {
-  const [expandedItems, setExpandedItems] = useState({});
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const { mode, setMode, theme } = useTheme();
+  const darkTheme = mode === 'dark';
 
-  const settingsOptions = [
-    {
-      id: 1,
-      title: 'Weather Units',
-      subtitle: 'Temperature, wind speed, pressure',
-      icon: 'thermometer',
-      dropdownOptions: [
-        { label: 'Temperature: Celsius (°C)', value: 'celsius' },
-        { label: 'Temperature: Fahrenheit (°F)', value: 'fahrenheit' },
-        { label: 'Wind Speed: km/h', value: 'kmh' },
-        { label: 'Wind Speed: mph', value: 'mph' },
-        { label: 'Pressure: hPa', value: 'hpa' },
-        { label: 'Pressure: inHg', value: 'inhg' },
-      ]
-    },
-    {
-      id: 2,
-      title: 'Location Services',
-      subtitle: 'GPS and location preferences',
-      icon: 'map-marker',
-      dropdownOptions: [
-        { label: 'Use Current Location', value: 'current' },
-        { label: 'Manual Location Entry', value: 'manual' },
-        { label: 'Saved Locations', value: 'saved' },
-        { label: 'Location History', value: 'history' },
-        { label: 'Privacy Settings', value: 'privacy' },
-      ]
-    },
-    {
-      id: 3,
-      title: 'Notifications',
-      subtitle: 'Weather alerts and updates',
-      icon: 'bell',
-      dropdownOptions: [
-        { label: 'Severe Weather Alerts', value: 'severe' },
-        { label: 'Daily Weather Summary', value: 'daily' },
-        { label: 'Rain Notifications', value: 'rain' },
-        { label: 'Temperature Extremes', value: 'temperature' },
-        { label: 'Push Notification Sound', value: 'sound' },
-        { label: 'Notification Frequency', value: 'frequency' },
-      ]
-    },
-    {
-      id: 4,
-      title: 'Display Settings',
-      subtitle: 'Theme and appearance',
-      icon: 'palette',
-      dropdownOptions: [
-        { label: 'Dark Theme', value: 'dark' },
-        { label: 'Light Theme', value: 'light' },
-        { label: 'Auto Theme (System)', value: 'auto' },
-        { label: 'Background Images', value: 'background' },
-        { label: 'Icon Style', value: 'icons' },
-        { label: 'Font Size', value: 'font' },
-      ]
-    },
-    {
-      id: 5,
-      title: 'Data & Storage',
-      subtitle: 'Cache and offline data',
-      icon: 'database',
-      dropdownOptions: [
-        { label: 'Clear Cache', value: 'clear' },
-        { label: 'Offline Data Storage', value: 'offline' },
-        { label: 'Auto-sync Settings', value: 'sync' },
-        { label: 'Data Usage Statistics', value: 'usage' },
-        { label: 'Export Data', value: 'export' },
-      ]
-    },
-    {
-      id: 6,
-      title: 'Privacy',
-      subtitle: 'Data sharing and permissions',
-      icon: 'shield-check',
-      dropdownOptions: [
-        { label: 'Location Permission', value: 'location' },
-        { label: 'Data Collection Settings', value: 'collection' },
-        { label: 'Analytics & Crash Reports', value: 'analytics' },
-        { label: 'Third-party Integrations', value: 'integrations' },
-        { label: 'Privacy Policy', value: 'policy' },
-      ]
-    },
-    {
-      id: 7,
-      title: 'About',
-      subtitle: 'Version info and support',
-      icon: 'information',
-      dropdownOptions: [
-        { label: 'App Version', value: 'version' },
-        { label: 'What\'s New', value: 'changelog' },
-        { label: 'Help & Support', value: 'help' },
-        { label: 'Contact Us', value: 'contact' },
-        { label: 'Rate App', value: 'rate' },
-        { label: 'Terms of Service', value: 'terms' },
-      ]
-    },
-  ];
-
-  const toggleDropdown = (itemId) => {
-    setExpandedItems(prev => ({
-      ...prev,
-      [itemId]: !prev[itemId]
-    }));
-  };
-
-  const handleDropdownItemPress = (parentId, option) => {
-    console.log(`Selected: ${option.label} from ${parentId}`);
-    // Add your action logic here
+  const handleThemeToggle = (value) => {
+    setMode(value ? 'dark' : 'light');
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Settings</Text>
-        <Text style={styles.headerSubtitle}>Customize your SkyCast experience</Text>
+      <View style={styles.headerModern}>
+        <MaterialCommunityIcons name="cog" size={32} color={theme.icon} style={{ marginRight: 10 }} />
+        <Text style={[styles.headerTitleModern, { color: theme.temp }]}>Settings</Text>
       </View>
-
-      {/* Settings List */}
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.settingsGroup}>
-          {settingsOptions.map((option, index) => (
-            <View key={option.id}>
-              <TouchableOpacity
-                style={[
-                  styles.settingItem,
-                  index === settingsOptions.length - 1 && !expandedItems[option.id] && styles.lastItem
-                ]}
-                onPress={() => toggleDropdown(option.id)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.settingLeft}>
-                  <View style={styles.iconContainer}>
-                    <MaterialCommunityIcons
-                      name={option.icon}
-                      size={24}
-                      color="white"
-                    />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingTitle}>{option.title}</Text>
-                    <Text style={styles.settingSubtitle}>{option.subtitle}</Text>
-                  </View>
-                </View>
-                <MaterialCommunityIcons
-                  name={expandedItems[option.id] ? "chevron-up" : "chevron-down"}
-                  size={24}
-                  color="rgba(255, 255, 255, 0.6)"
-                />
-              </TouchableOpacity>
-
-              {/* Dropdown Menu */}
-              {expandedItems[option.id] && (
-                <View style={styles.dropdownContainer}>
-                  {option.dropdownOptions.map((dropdownOption, dropdownIndex) => (
-                    <TouchableOpacity
-                      key={dropdownOption.value}
-                      style={[
-                        styles.dropdownItem,
-                        dropdownIndex === option.dropdownOptions.length - 1 && styles.lastDropdownItem
-                      ]}
-                      onPress={() => handleDropdownItemPress(option.id, dropdownOption)}
-                      activeOpacity={0.6}
-                    >
-                      <Text style={styles.dropdownItemText}>{dropdownOption.label}</Text>
-                      <MaterialCommunityIcons
-                        name="chevron-right"
-                        size={18}
-                        color="rgba(255, 255, 255, 0.4)"
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          ))}
+      <ScrollView contentContainerStyle={styles.scrollContentModern} showsVerticalScrollIndicator={false}>
+        {/* Notifications */}
+        <View style={styles.sectionModern}>
+          <Text style={[styles.sectionTitleModern, { color: theme.temp }]}>Notifications</Text>
+          <View style={styles.settingRowModern}>
+            <MaterialCommunityIcons name="bell-ring-outline" size={24} color={theme.icon} style={{ marginRight: 12 }} />
+            <Text style={styles.settingLabelModern}>Weather Notifications</Text>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+              thumbColor={notificationsEnabled ? '#FFD600' : '#888'}
+              trackColor={{ true: '#FFD60055', false: '#444' }}
+              style={{ marginLeft: 'auto' }}
+            />
+          </View>
         </View>
-
-        {/* App Info Section */}
-        <View style={styles.appInfoSection}>
-          <Text style={styles.appInfoTitle}>SkyCast Weather</Text>
-          <Text style={styles.appInfoVersion}>Version 1.0.0</Text>
-          <Text style={styles.appInfoCopyright}>© 2024 SkyCast Team</Text>
+        {/* Theme */}
+        <View style={styles.sectionModern}>
+          <Text style={[styles.sectionTitleModern, { color: theme.temp }]}>Appearance</Text>
+          <View style={styles.settingRowModern}>
+            <MaterialCommunityIcons name="theme-light-dark" size={24} color={theme.icon} style={{ marginRight: 12 }} />
+            <Text style={styles.settingLabelModern}>Dark Theme</Text>
+            <Switch
+              value={darkTheme}
+              onValueChange={handleThemeToggle}
+              thumbColor={darkTheme ? theme.accent : '#888'}
+              trackColor={{ true: theme.accent + '55', false: '#444' }}
+              style={{ marginLeft: 'auto' }}
+            />
+          </View>
+        </View>
+        {/* About Section (App Info) */}
+        <View style={styles.appInfoSectionModern}>
+          <Text style={[styles.appInfoTitle, { color: theme.text }]}>SkyCast Weather</Text>
+          <Text style={[styles.appInfoVersion, { color: theme.secondaryText }]}>Version 1.0.0</Text>
+          <Text style={[styles.appInfoCopyright, { color: theme.secondaryText }]}>© 2024 SkyCast</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -317,5 +184,62 @@ const styles = StyleSheet.create({
     color: 'rgba(232, 244, 253, 0.8)',
     fontWeight: '400',
     flex: 1,
+  },
+  centeredInfoSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1E2749',
+  },
+  headerModern: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 10,
+    backgroundColor: 'transparent',
+  },
+  headerTitleModern: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFD600',
+    letterSpacing: 0.5,
+  },
+  scrollContentModern: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+  },
+  sectionModern: {
+    marginBottom: 32,
+    backgroundColor: 'transparent',
+    borderRadius: 16,
+    padding: 18,
+    // No shadow
+  },
+  sectionTitleModern: {
+    color: '#FFD600',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    letterSpacing: 0.2,
+  },
+  settingRowModern: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingVertical: 6,
+  },
+  settingLabelModern: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  appInfoSectionModern: {
+    marginTop: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 40,
   },
 });
