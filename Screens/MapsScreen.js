@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, UrlTile } from 'react-native-maps';
 import * as Location from 'expo-location';
 import Footer from '../Components/footer';
@@ -52,33 +61,34 @@ export default function MapsScreen({ navigation }) {
     })();
   }, []);
 
-  // Zoom controls
   const handleZoom = (delta) => {
-    if (!region) return;
-    let newDelta = Math.max(0.01, region.latitudeDelta * (delta < 0 ? 2 : 0.5));
-    setRegion({ ...region, latitudeDelta: newDelta, longitudeDelta: newDelta });
-    if (mapRef.current) {
-      mapRef.current.animateToRegion({ ...region, latitudeDelta: newDelta, longitudeDelta: newDelta }, 300);
-    }
+    setRegion(prevRegion => {
+      if (!prevRegion) return prevRegion;
+      const newDelta = Math.max(0.01, prevRegion.latitudeDelta * (delta < 0 ? 2 : 0.5));
+      const updatedRegion = {
+        ...prevRegion,
+        latitudeDelta: newDelta,
+        longitudeDelta: newDelta,
+      };
+      if (mapRef.current) {
+        mapRef.current.animateToRegion(updatedRegion, 300);
+      }
+      return updatedRegion;
+    });
     setZoom(z => Math.max(1, delta < 0 ? z - 1 : z + 1));
   };
 
-  // Re-center map to user location
   const recenterMap = () => {
-    if (location) {
-      setRegion({
+    if (location && region) {
+      const newRegion = {
         latitude: location.latitude,
         longitude: location.longitude,
-        latitudeDelta: 2,
-        longitudeDelta: 2,
-      });
+        latitudeDelta: region.latitudeDelta,
+        longitudeDelta: region.longitudeDelta,
+      };
+      setRegion(newRegion);
       if (mapRef.current) {
-        mapRef.current.animateToRegion({
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 2,
-          longitudeDelta: 2,
-        }, 1000);
+        mapRef.current.animateToRegion(newRegion, 1000);
       }
     }
   };
@@ -120,7 +130,6 @@ export default function MapsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#1e1e1e' }}>
-      {/* Layer Selector (vertical) */}
       <View style={styles.topLayerSelector}>
         {Object.keys(LAYERS).map((key) => (
           <TouchableOpacity
@@ -132,36 +141,35 @@ export default function MapsScreen({ navigation }) {
           </TouchableOpacity>
         ))}
       </View>
-      {region && (
-        <MapView
-          ref={mapRef}
-          provider={PROVIDER_GOOGLE}
-          style={[styles.map, { height: height - FOOTER_HEIGHT }]}
-          region={region}
-          showsUserLocation
-          showsMyLocationButton
-          loadingEnabled
-        >
-          <UrlTile
-            urlTemplate={LAYERS[layer]}
-            zIndex={1}
-            maximumZ={15}
-            tileSize={256}
-            onError={() => setTileError(true)}
+
+      <MapView
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        style={StyleSheet.absoluteFillObject}
+        region={region}
+        showsUserLocation
+        showsMyLocationButton
+        loadingEnabled
+      >
+        <UrlTile
+          urlTemplate={LAYERS[layer]}
+          zIndex={1}
+          maximumZ={15}
+          tileSize={256}
+          onError={() => setTileError(true)}
+        />
+        {location && location.latitude != null && location.longitude != null && (
+          <Marker
+            coordinate={{
+              latitude: location.latitude,
+              longitude: location.longitude,
+            }}
+            title="You are here"
+            pinColor="red"
           />
-          {location && location.latitude != null && location.longitude != null && (
-            <Marker
-              coordinate={{
-                latitude: location.latitude,
-                longitude: location.longitude,
-              }}
-              title="You are here"
-              pinColor="red"
-            />
-          )}
-        </MapView>
-      )}
-      {/* Zoom Controls */}
+        )}
+      </MapView>
+
       <View style={styles.zoomControls}>
         <TouchableOpacity style={styles.zoomBtn} onPress={() => handleZoom(1)}>
           <Ionicons name="add" size={22} color="#FFD700" />
@@ -170,25 +178,23 @@ export default function MapsScreen({ navigation }) {
           <Ionicons name="remove" size={22} color="#FFD700" />
         </TouchableOpacity>
       </View>
-      {/* Re-center Button */}
+
       <TouchableOpacity style={styles.recenterBtn} onPress={recenterMap}>
         <Ionicons name="locate" size={26} color="#FFD700" />
       </TouchableOpacity>
+
       {tileError && (
         <View style={styles.tileErrorBanner}>
           <Text style={styles.tileErrorText}>Weather map tiles failed to load. Check your API key or network.</Text>
         </View>
       )}
+
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  map: {
-    width: '100%',
-    flex: 1,
-  },
   loadingContainerBox: {
     flex: 1,
     justifyContent: 'center',
@@ -212,11 +218,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 70,
     left: 16,
-    backgroundColor: 'transparent',
     zIndex: 10,
     alignItems: 'flex-start',
-    paddingVertical: 0,
-    paddingHorizontal: 0,
   },
   layerButtonVertical: {
     marginVertical: 4,
