@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Dimensions,
   ActivityIndicator,
-  Alert,
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
@@ -19,11 +18,14 @@ const { width, height } = Dimensions.get('window');
 const FOOTER_HEIGHT = 90;
 const OPENWEATHER_KEY = 'ee84c8a759c7a2d150f8e5723b1f0b06';
 
+// ✅ Only relevant weather layers (no snow)
 const LAYERS = {
   Temperature: `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${OPENWEATHER_KEY}`,
   Precipitation: `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${OPENWEATHER_KEY}`,
   Wind: `https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${OPENWEATHER_KEY}`,
   Clouds: `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${OPENWEATHER_KEY}`,
+  Pressure: `https://tile.openweathermap.org/map/pressure_new/{z}/{x}/{y}.png?appid=${OPENWEATHER_KEY}`,
+  Humidity: `https://tile.openweathermap.org/map/humidity_new/{z}/{x}/{y}.png?appid=${OPENWEATHER_KEY}`,
 };
 
 export default function MapsScreen({ navigation }) {
@@ -33,21 +35,27 @@ export default function MapsScreen({ navigation }) {
   const [tileError, setTileError] = useState(false);
   const [zoom, setZoom] = useState(6);
   const [locationError, setLocationError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const mapRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true);
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-          setLocationError('Location permission not granted. Enable location to view the heat map.');
+          setLocationError('Location permission not granted.');
+          setLoading(false);
           return;
         }
+
         const { coords } = await Location.getCurrentPositionAsync({});
-        if (!coords || coords.latitude == null || coords.longitude == null) {
-          setLocationError('Could not get your location.');
+        if (!coords) {
+          setLocationError('Unable to retrieve location.');
+          setLoading(false);
           return;
         }
+
         setLocation(coords);
         setRegion({
           latitude: coords.latitude,
@@ -55,18 +63,20 @@ export default function MapsScreen({ navigation }) {
           latitudeDelta: 2,
           longitudeDelta: 2,
         });
+        setLoading(false);
       } catch (e) {
-        setLocationError('Failed to get location. Please check your device settings.');
+        setLocationError('Error retrieving location. Check your settings.');
+        setLoading(false);
       }
     })();
   }, []);
 
   const handleZoom = (delta) => {
-    setRegion(prevRegion => {
-      if (!prevRegion) return prevRegion;
-      const newDelta = Math.max(0.01, prevRegion.latitudeDelta * (delta < 0 ? 2 : 0.5));
+    setRegion((prev) => {
+      if (!prev) return prev;
+      const newDelta = Math.max(0.01, prev.latitudeDelta * (delta < 0 ? 2 : 0.5));
       const updatedRegion = {
-        ...prevRegion,
+        ...prev,
         latitudeDelta: newDelta,
         longitudeDelta: newDelta,
       };
@@ -75,7 +85,7 @@ export default function MapsScreen({ navigation }) {
       }
       return updatedRegion;
     });
-    setZoom(z => Math.max(1, delta < 0 ? z - 1 : z + 1));
+    setZoom((z) => Math.max(1, delta < 0 ? z - 1 : z + 1));
   };
 
   const recenterMap = () => {
@@ -87,23 +97,46 @@ export default function MapsScreen({ navigation }) {
         longitudeDelta: region.longitudeDelta,
       };
       setRegion(newRegion);
-      if (mapRef.current) {
-        mapRef.current.animateToRegion(newRegion, 1000);
-      }
+      mapRef.current?.animateToRegion(newRegion, 1000);
     }
   };
 
-  if (locationError) {
+  if (loading) {
     return (
       <LinearGradient
-        colors={["#232946", "#1a1a2e", "#282a36"]}
+        colors={['#232946', '#1a1a2e', '#282a36']}
         style={{ flex: 1 }}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       >
-        <View style={styles.loadingContainerBox}>
+        <View style={styles.loadingContainer}>
           <View style={styles.loadingBox}>
-            <Text style={{ color: 'red', marginTop: 10, fontSize: 18, textAlign: 'center' }}>{locationError}</Text>
+            <ActivityIndicator size="large" color="#FFD600" />
+            <Text style={styles.loadingText}>Loading weather map...</Text>
+          </View>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  if (locationError) {
+    return (
+      <LinearGradient
+        colors={['#232946', '#1a1a2e', '#282a36']}
+        style={{ flex: 1 }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      >
+        <View style={styles.loadingContainer}>
+          <View style={styles.loadingBox}>
+            <Ionicons name="location-off" size={48} color="#FF6B6B" />
+            <Text style={styles.errorText}>{locationError}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => window.location.reload()}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </LinearGradient>
@@ -113,15 +146,15 @@ export default function MapsScreen({ navigation }) {
   if (!region) {
     return (
       <LinearGradient
-        colors={["#232946", "#1a1a2e", "#282a36"]}
+        colors={['#232946', '#1a1a2e', '#282a36']}
         style={{ flex: 1 }}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       >
-        <View style={styles.loadingContainerBox}>
+        <View style={styles.loadingContainer}>
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color="#FFD600" />
-            <Text style={{ color: '#fff', marginTop: 10, fontSize: 18 }}>Loading weather...</Text>
+            <Text style={styles.loadingText}>Initializing map...</Text>
           </View>
         </View>
       </LinearGradient>
@@ -129,27 +162,46 @@ export default function MapsScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#1e1e1e' }}>
-      <View style={styles.topLayerSelector}>
-        {Object.keys(LAYERS).map((key) => (
-          <TouchableOpacity
-            key={key}
-            onPress={() => { setLayer(key); setTileError(false); }}
-            style={[styles.layerButtonVertical, layer === key && styles.selectedLayerButton]}
-          >
-            <Text style={[styles.layerText, layer === key && styles.selectedLayer]}>{key}</Text>
-          </TouchableOpacity>
-        ))}
+    <SafeAreaView style={styles.container}>
+      {/* Layer Selector */}
+      <View style={styles.layerSelector}>
+        <Text style={styles.layerTitle}>Weather Layer</Text>
+        <View style={styles.layerButtons}>
+          {Object.keys(LAYERS).map((key) => (
+            <TouchableOpacity
+              key={key}
+              onPress={() => {
+                setLayer(key);
+                setTileError(false);
+              }}
+              style={[
+                styles.layerButton,
+                layer === key && styles.selectedLayerButton,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.layerText,
+                  layer === key && styles.selectedLayerText,
+                ]}
+              >
+                {key}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
+      {/* Map */}
       <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
-        style={StyleSheet.absoluteFillObject}
+        style={styles.map}
         region={region}
         showsUserLocation
-        showsMyLocationButton
+        showsMyLocationButton={false}
         loadingEnabled
+        onMapReady={() => setTileError(false)}
       >
         <UrlTile
           urlTemplate={LAYERS[layer]}
@@ -158,48 +210,58 @@ export default function MapsScreen({ navigation }) {
           tileSize={256}
           onError={() => setTileError(true)}
         />
-        {location && location.latitude != null && location.longitude != null && (
+        {location && (
           <Marker
             coordinate={{
               latitude: location.latitude,
               longitude: location.longitude,
             }}
-            title="You are here"
-            pinColor="red"
+            title="Your Location"
+            pinColor="#FFD600"
           />
         )}
       </MapView>
 
+      {/* Zoom Controls */}
       <View style={styles.zoomControls}>
         <TouchableOpacity style={styles.zoomBtn} onPress={() => handleZoom(1)}>
-          <Ionicons name="add" size={22} color="#FFD700" />
+          <Ionicons name="add" size={24} color="#FFD700" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.zoomBtn} onPress={() => handleZoom(-1)}>
-          <Ionicons name="remove" size={22} color="#FFD700" />
+          <Ionicons name="remove" size={24} color="#FFD700" />
         </TouchableOpacity>
       </View>
 
+      {/* Recenter Button */}
       <TouchableOpacity style={styles.recenterBtn} onPress={recenterMap}>
-        <Ionicons name="locate" size={26} color="#FFD700" />
+        <Ionicons name="locate" size={28} color="#FFD700" />
       </TouchableOpacity>
 
+      {/* Error Banner */}
       {tileError && (
-        <View style={styles.tileErrorBanner}>
-          <Text style={styles.tileErrorText}>Weather map tiles failed to load. Check your API key or network.</Text>
+        <View style={styles.errorBanner}>
+          <Ionicons name="warning" size={20} color="#FFD700" />
+          <Text style={styles.errorBannerText}>
+            Weather tiles failed to load. Check your connection.
+          </Text>
         </View>
       )}
 
+      {/* Footer Navigation */}
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  loadingContainerBox: {
+  container: {
+    flex: 1,
+    backgroundColor: '#1e1e1e',
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1E2749',
   },
   loadingBox: {
     width: width * 0.8,
@@ -208,39 +270,78 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
     elevation: 8,
   },
-  topLayerSelector: {
-    position: 'absolute',
-    top: 70,
-    left: 16,
-    zIndex: 10,
-    alignItems: 'flex-start',
+  loadingText: {
+    color: '#fff',
+    marginTop: 16,
+    fontSize: 18,
+    fontWeight: '600',
   },
-  layerButtonVertical: {
-    marginVertical: 4,
+  errorText: {
+    color: '#FF6B6B',
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: '#FFD600',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#1E2749',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  layerSelector: {
+    position: 'absolute',
+    top: 60,
+    left: 16,
+    right: 16,
+    zIndex: 10,
+    backgroundColor: 'rgba(30, 30, 30, 0.9)',
+    borderRadius: 12,
+    padding: 16,
+    elevation: 4,
+  },
+  layerTitle: {
+    color: '#FFD600',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  layerButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  layerButton: {
     paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    backgroundColor: 'rgba(30,30,30,0.7)',
-    minWidth: 120,
-    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   selectedLayerButton: {
-    backgroundColor: '#FFD70022',
+    backgroundColor: '#FFD600',
+    borderColor: '#FFD600',
   },
   layerText: {
-    color: '#E8F4FD',
-    fontWeight: 'bold',
+    color: '#fff',
     fontSize: 14,
+    fontWeight: '500',
   },
-  selectedLayer: {
-    textDecorationLine: 'underline',
-    color: '#FFD700',
+  selectedLayerText: {
+    color: '#1E2749',
+    fontWeight: 'bold',
+  },
+  map: {
+    flex: 1,
   },
   zoomControls: {
     position: 'absolute',
@@ -248,16 +349,13 @@ const styles = StyleSheet.create({
     bottom: FOOTER_HEIGHT + 80,
     zIndex: 20,
     flexDirection: 'column',
-    backgroundColor: 'rgba(30,30,30,0.85)',
+    backgroundColor: 'rgba(30, 30, 30, 0.9)',
     borderRadius: 12,
     padding: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
+    elevation: 4,
   },
   zoomBtn: {
-    padding: 8,
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -265,33 +363,31 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: FOOTER_HEIGHT + 24,
     right: 18,
-    backgroundColor: 'rgba(30,30,30,0.95)',
-    borderRadius: 22,
-    padding: 10,
+    backgroundColor: 'rgba(30, 30, 30, 0.9)',
+    borderRadius: 28,
+    padding: 12,
     zIndex: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
     elevation: 4,
   },
-  tileErrorBanner: {
+  errorBanner: {
     position: 'absolute',
-    top: 40,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(30,30,30,0.95)',
+    top: 140,
+    left: 16,
+    right: 16,
+    backgroundColor: 'rgba(30, 30, 30, 0.95)',
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    padding: 12,
+    borderRadius: 8,
     zIndex: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#FFD70044',
-    justifyContent: 'center',
+    borderLeftWidth: 4,
+    borderLeftColor: '#FFD700',
   },
-  tileErrorText: {
+  errorBannerText: {
     color: '#FFD700',
     marginLeft: 8,
     fontWeight: '600',
     fontSize: 14,
+    flex: 1,
   },
 });

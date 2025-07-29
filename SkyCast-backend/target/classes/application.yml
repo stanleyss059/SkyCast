@@ -1,0 +1,53 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: skycast-backend
+  cache:
+    type: redis
+    redis:
+      time-to-live: 1800000 # 30 minutes
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,caches
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.skycast: DEBUG
+    org.springframework.cache: DEBUG
+    org.springframework.web: DEBUG
+
+# Weather API Configuration
+weather:
+  api:
+    weatherbit:
+      base-url: https://api.weatherbit.io/v2.0
+      key: ${WEATHERBIT_API_KEY:d49b871a655b4cdc80ab23d6985a07bb}
+    openweather:
+      base-url: https://api.openweathermap.org/data/2.5
+      key: ${OPENWEATHER_API_KEY:ee84c8a759c7a2d150f8e5723b1f0b06}
+  cache:
+    current-weather: 900 # 15 minutes
+    daily-forecast: 3600 # 1 hour
+    hourly-forecast: 1800 # 30 minutes
+    location-geocode: 86400 # 24 hours 

@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: skycast-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  skycast-backend:
+    build: .
+    container_name: skycast-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - WEATHERBIT_API_KEY=${WEATHERBIT_API_KEY:d49b871a655b4cdc80ab23d6985a07bb}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY:ee84c8a759c7a2d150f8e5723b1f0b06}
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - skycast-network
+
+volumes:
+  redis_data:
+
+
+networks:
+  skycast-network:
+    driver: bridge
